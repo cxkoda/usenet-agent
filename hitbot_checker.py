@@ -73,13 +73,16 @@ def start_watchdog(hostname, Config, loop=True):
             Config.write()
             time.sleep(float(Config['bot']['check_intervall']))
         else:
-            if (Config[hostname]['worked']=='1' or (checktime - gentime).total_seconds()/3600. > 5.):
+            #if (Config[hostname]['worked']=='1' or (checktime - gentime).total_seconds()/3600. > 5.):
                 print('Generating new account...')
-                bot()
+                try:
+                    bot()
+                except:
+                    pass
                 Config.reload()
-            else:
-                print('Waiting for account activation...')
-                time.sleep(float(Config['bot']['check_intervall']))
+            #else:
+            #    print('Waiting for account activation...')
+            #    time.sleep(float(Config['bot']['check_intervall']))
 
         if platform.system()=='Linux':
             os.system('clear')
