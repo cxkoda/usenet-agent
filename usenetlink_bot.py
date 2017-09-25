@@ -81,7 +81,9 @@ def usenetlink_bot():
     while True:
         n += 1
         print('Getting Trial')
-        mail = name_dotter(Config['MAIL']['name'], int(Config[hostname]['dotting_step']))+'@'+Config['MAIL']['domain']
+        mail = name_dotter(Config['MAIL']['name'], int(Config[hostname]['dotting_step']))+\
+               '+'+ login +\
+               '@'+Config['MAIL']['domain']
         response = requests.post('http://members.usenetlink.com/signup/60minutes',
                             data={'login': login, 'email': mail, 'product_id_page-0[]': "8-8",
                                   '_save_': "page-0", '_qf_page-0_next': "Next", 'paysys_id': "free"},
