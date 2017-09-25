@@ -30,7 +30,7 @@ async def find(proxies, loop):
     # only anonymous & high levels of anonymity for http protocol and high for others:
     types = ['HTTP']
     countries = ['US', 'GB', 'DE']
-    limit = 2
+    limit = 4
 
     await broker.find(types=types, countries=countries, limit=limit)# countries=countries)
 
@@ -77,8 +77,9 @@ def usenetlink_bot():
     #html_file.write(res.text)
 
 
-
+    n = 0
     while True:
+        n += 1
         print('Getting Trial')
         mail = name_dotter(Config['MAIL']['name'], int(Config[hostname]['dotting_step']))+'@'+Config['MAIL']['domain']
         response = requests.post('http://members.usenetlink.com/signup/60minutes',
@@ -90,6 +91,8 @@ def usenetlink_bot():
         if response.text.find('already exists') == -1:
             html_file.write(response.text)
             break
+        if n > 15:
+            raise RuntimeError
 
     html_file.close()
 
@@ -98,7 +101,13 @@ def usenetlink_bot():
     imap.login(Config['MAIL']['login_user'], Config['MAIL']['login_pass'])
     #hitbot_log.write('done\n')
 
+    n = 0
     while True:
+        n += 1
+        print(n)
+        if n > 15:
+            raise RuntimeError
+
         print('\t- Waiting for activation mail...\t\t')
         #hitbot_log.write('\t- Waiting for mail...\t\t')
         time.sleep(1)
@@ -126,12 +135,14 @@ def usenetlink_bot():
             Config[hostname]['activation_link'] = link
             break
 
-
     #hitbot_log.write('\t- Activation link found:\t'+link+'\n')
     requests.get(link, verify=False, proxies=proxy_dict)
 
-
+    n = 0
     while True:
+        n+=1
+        if n > 15:
+            raise RuntimeError
         print('\t- Waiting for information mail...\t\t')
         #hitbot_log.write('\t- Waiting for mail...\t\t')
         time.sleep(1)
