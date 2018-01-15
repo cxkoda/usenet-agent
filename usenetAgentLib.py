@@ -33,7 +33,7 @@ class sabnzbdHandler:
 		self.cfgSabnzbd.write()
 
 	def restart(self):
-		SabRestart = 'http://localhost:8080/api?mode=restart&output=xml&apikey=' + self.cfgSabnzbd['misc']['api_key']
+		SabRestart = 'http://127.0.0.1:8080/api?mode=restart&output=xml&apikey=' + self.cfgSabnzbd['misc']['api_key']
 		try:
 			requests.get(SabRestart)
 		except requests.exceptions.RequestException:
