@@ -10,6 +10,8 @@ import datetime, time
 import string
 import random
 
+import hashlib
+
 
 
 from configobj import ConfigObj
@@ -157,6 +159,10 @@ class ewekaAgent(usenetAgent):
 		browser.submit_form(form)
 		parsed = str(browser.parsed)
 
+		with open('last_response.html', 'w+') as htmlFile:
+			htmlFile.write(parsed)
+			print(hashlib.md5(parsed).hexdigest())
+
 		#with open('res.html', 'r') as htmlFile:
 		#	parsed = htmlFile.read()
 
@@ -177,16 +183,24 @@ class ewekaAgent(usenetAgent):
 
 	def getTrial(self):
 		n = 0
+		consequent_errors = 0
 		while True:
 			n += 1
-			print(term.format('Trial: %s' % n, term.Color.YELLOW))
-			self.establishTorConnection()
-			self.testConnection()
-			self.generateRandomMail()
-			self.setHostUsername(self.randomMail)
-			if self.sendForm(self.randomMail):
-				break
-			self.closeTorConnection()
+			try:
+				print(term.format('Trial: %s' % n, term.Color.YELLOW))
+				self.establishTorConnection()
+				self.testConnection()
+				self.generateRandomMail()
+				self.setHostUsername(self.randomMail)
+				if self.sendForm(self.randomMail):
+					break
+				self.closeTorConnection()
+				consequent_errors = 0
+			except:
+				if (consequent_errors > 20):
+					exit(1)
+				else:
+					consequent_errors += 1
 
 		self.printCredentials()
 		self.writeCfgFiles()
@@ -198,5 +212,6 @@ import re
 from robobrowser import RoboBrowser
 
 if __name__ == '__main__':
+	consequent_errors = 0
 	with ewekaAgent("config.ini", 'eweka') as ua:
-		ua.getTrial()
+			ua.getTrial()
