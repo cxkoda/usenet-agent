@@ -11,7 +11,8 @@ import string
 import random
 
 import hashlib
-
+import subprocess
+import io
 
 
 from configobj import ConfigObj
@@ -159,22 +160,22 @@ class ewekaAgent(usenetAgent):
 		browser.submit_form(form)
 		parsed = str(browser.parsed)
 
-		with open('last_response.html', 'w+') as htmlFile:
+		with io.open('last_response.html', 'w+', encoding='utf-8') as htmlFile:
 			htmlFile.write(parsed)
-			print(hashlib.md5(parsed).hexdigest())
 
 		#with open('res.html', 'r') as htmlFile:
 		#	parsed = htmlFile.read()
 
 		if parsed.find('Password') > 0 or parsed.find('password') > 0 or parsed.find('Pass') > 0 or parsed.find('pass') > 0:
 			print('Robo Success')
-			with open('last_success.html', 'w+') as htmlFile:
-				htmlFile.write(parsed)
 
 			start = parsed.find('Password:</i>') + 82
 			len = 6
 			password = parsed[start:start+len]
 			self.setHostPassword(password)
+
+			with io.open('last_response.html', 'w+', encoding='utf-8') as htmlFile:
+				htmlFile.write(parsed)
 
 			return True
 
