@@ -64,7 +64,7 @@ class usenetAgent:
 		self.cfgHostName = cfgHostName
 		self.sabHostName = sabHostName
 
-		self.socksPort = 9050
+		self.socksPort = int(self.cfg['bot']['torPort'])
 
 		try:
 			pass
