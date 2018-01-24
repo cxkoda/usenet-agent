@@ -110,10 +110,16 @@ class usenetAgent:
 	def generateRandomString(self, size=10, chars=string.ascii_lowercase + string.digits):
 		return ''.join(random.choice(chars) for _ in range(size))
 
+	def dotString(self, str, step=None):
+		if step is None:
+			step = random.randint(0, 2**(len(str)-1))
+		ret = ''.join(str[i] + '.' if int(step / 2 ** i) % 2 == 1 else str[i] for i in range(len(str) - 1))
+		return ret + str[-1]
+
 	def generateRandomMail(self, randomString = None):
 		if randomString is None:
 			randomString = self.generateRandomString()
-		self.randomMail = self.cfg['MAIL']['name'] + '+' \
+		self.randomMail = self.dotString(self.cfg['MAIL']['name']) + '+' \
 						  + self.cfgHostName + '_' \
 						  + randomString \
 						  + '@' + self.cfg['MAIL']['domain']
