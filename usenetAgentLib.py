@@ -71,6 +71,10 @@ class usenetAgent:
 		except:
 			self.usedIpList = None
 
+		self.hashDict = {}
+		for key, value in self.cfg['md5_hashes'].items():
+			self.hashDict[value] = key
+
 	def __enter__(self):
 		return self
 
@@ -171,6 +175,17 @@ class ewekaAgent(usenetAgent):
 
 		#with open('res.html', 'r') as htmlFile:
 		#	parsed = htmlFile.read()
+
+		htmlHash = hashlib.md5(parsed.encode()).hexdigest()
+		hashFlag = False
+		try:
+			print('Response Hash:', htmlHash, "->", self.hashDict[htmlHash])
+		except KeyError:
+			print('HTML Hash:', htmlHash, "->", "INTERESTING !!")
+			hashFlag = True
+			exit(0)
+
+
 
 		if parsed.find('Password') > 0 or parsed.find('password') > 0 or parsed.find('Pass') > 0 or parsed.find('pass') > 0:
 			print('Robo Success')
