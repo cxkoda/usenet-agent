@@ -3,18 +3,15 @@ import stem.process
 import os, platform, signal
 import socks, socket
 
-import requests
-from robobrowser import RoboBrowser
+import requests, imaplib
 
-import imaplib
-
-import datetime, time
+import datetime
 import string
 import random
 
 import hashlib
 import subprocess
-import io
+
 
 
 from configobj import ConfigObj
@@ -85,11 +82,17 @@ class usenetAgent:
 		self.cfg.write()
 
 	def closeTorConnection(self):
+		subprocess.Popen(["taskkill", "/IM", "tor.exe", "/F"])
+
 		if hasattr(self, 'torProcess'):
-			print('Killing Tor Process', self.torProcess.pid)
-			self.torProcess.kill()
+			# print('Killing Tor Process', self.torProcess.pid)
+			# self.torProcess.kill()
+			del self.torProcess
+
 
 	def establishTorConnection(self):
+		self.socksPort = int(self.cfg['bot']['torPort'])
+
 		def print_bootstrap_lines(line):
 			if "Bootstrapped " in line:
 				print(term.format(line, term.Color.BLUE))
@@ -200,193 +203,3 @@ class usenetAgent:
 		result, data = self.imapConnection.uid('fetch', latest_email_uid, '(RFC822)')
 		raw_email = data[0][1]
 		return str(raw_email)
-
-
-
-
-
-
-class ewekaAgent(usenetAgent):
-	def __init__(self, cfgPath, sabHostName='eweka'):
-		super(ewekaAgent, self).__init__(cfgPath, 'eweka', sabHostName)
-
-	def sendForm(self, mail):
-		print('Random Trial Mail: %s' % mail)
-		#response = requests.post('https://www.eweka.nl/en/free_trial/', data={'email': mail})
-		#parsed = response.text
-		#soup = BeautifulSoup(response.content, 'html.parser')
-
-		browser = RoboBrowser(history=True)
-		browser.open('https://www.eweka.nl/en/free_trial/')
-		form = browser.get_form()
-		form['email'].value = mail
-		browser.submit_form(form)
-		parsed = str(browser.parsed)
-
-		with io.open('last_response.html', 'w+', encoding='utf-8') as htmlFile:
-			htmlFile.write(parsed)
-
-		#with open('res.html', 'r') as htmlFile:
-		#	parsed = htmlFile.read()
-
-		htmlHash = hashlib.md5(parsed.encode()).hexdigest()
-		hashFlag = False
-		try:
-			print('Response Hash:', htmlHash, "->", self.hashDict[htmlHash])
-		except KeyError:
-			print('HTML Hash:', htmlHash, "->", "INTERESTING !!")
-			hashFlag = True
-			exit(0)
-
-
-
-		if parsed.find('Password') > 0 or parsed.find('password') > 0 or parsed.find('Pass') > 0 or parsed.find('pass') > 0:
-			print('Robo Success')
-
-			start = parsed.find('Password:</i>') + 82
-			len = 6
-			password = parsed[start:start+len]
-			self.setHostPassword(password)
-
-			with io.open('last_response.html', 'w+', encoding='utf-8') as htmlFile:
-				htmlFile.write(parsed)
-
-			return True
-
-		return False
-
-
-	def getTrial(self):
-		n = 0
-		consequent_errors = 0
-		while True:
-			n += 1
-			try:
-				self.closeTorConnection()
-			except:
-				pass
-			#try:
-			print(term.format('Trial: %s' % n, term.Color.YELLOW))
-			self.establishTorConnection()
-			self.testConnection()
-			self.generateRandomMail()
-			self.setHostUsername(self.randomMail)
-			if self.sendForm(self.randomMail):
-				break
-			self.closeTorConnection()
-			consequent_errors = 0
-			#except:
-			#	if (consequent_errors > 20):
-			#		exit(1)
-			#	else:
-			#		consequent_errors += 1
-
-		self.printCredentials()
-		self.writeCfgFiles()
-		self.sabHandler.restart()
-		return True
-
-
-
-
-class hitnewsAgent(usenetAgent):
-	def __init__(self, cfgPath, sabHostName='hitnews'):
-		super(hitnewsAgent, self).__init__(cfgPath, 'hitnews', sabHostName)
-
-	def sendForm(self, mail, username, password):
-		print("Sending form")
-		browser = RoboBrowser(history=True)
-		browser.open('https://member.hitnews.com/signup.php')
-		form = browser.get_form()
-		form['name_f'] = self.generateRandomString(10, string.ascii_lowercase)
-		form['name_l'] = self.generateRandomString(10, string.ascii_lowercase)
-		form['email'] = mail
-		form['login'] = username
-		form['pass0'] = password
-		form['pass1'] = password
-		browser.submit_form(form)
-		parsed = str(browser.parsed)
-
-		htmlHash = self.hashString(parsed.splitlines()[107])
-
-		try:
-			print('Response Hash:', htmlHash, "->", self.hashDict[htmlHash])
-			if self.hashDict[htmlHash] != 'ok':
-				return False
-		except KeyError:
-			print('HTML Hash:', htmlHash, "->", "unknown !!")
-			return False
-
-
-		with io.open('hitnews_after_form.html', 'w+', encoding='utf-8') as htmlFile:
-			htmlFile.write(parsed)
-
-		print('Agreeing to 2nd Form...')
-		form = browser.get_form()
-		form['i_agree'].value = ['1']
-		browser.submit_form(form)
-
-		with io.open('hitnews_after_accepting.html', 'w+', encoding='utf-8') as htmlFile:
-			htmlFile.write(parsed)
-
-		return True
-
-
-	def activateAccount(self):
-		self.establishImapConnection()
-
-		while(True):
-			mail_text = self.fetchLatestMail(mailSubject="Hitnews.com - Account Activation",
-											 sinceDate=datetime.date.today()-datetime.timedelta(1))
-			link_begin = mail_text.find('https://member.hitnews.com/signup.php?cs=')
-			link = mail_text[link_begin:link_begin + 61]
-
-			if (link != self.cfg[self.sabHostName]['activation_link']):
-				self.cfg[self.sabHostName]['activation_link'] = link
-				print('Activation link found:' + link)
-				break
-			else:
-				time.sleep(1)
-
-		browser = RoboBrowser(history=True)
-		browser.open(link)
-		parsed = str(browser.parsed)
-
-		with io.open('hitnews_after_activation.html', 'w+', encoding='utf-8') as htmlFile:
-			htmlFile.write(parsed)
-
-
-	def getTrial(self):
-		n = 0
-		consequent_errors = 0
-		while True:
-			n += 1
-			#try:
-			#	self.closeTorConnection()
-			#except:
-			#	pass
-			#try:
-			print(term.format('Trial: %s' % n, term.Color.YELLOW))
-			#self.establishTorConnection()
-			#self.testConnection()
-			self.generateRandomMail()
-			self.setHostUsername(self.generateRandomString())
-			self.setHostPassword(self.generateRandomString())
-			self.generateRandomMail(dotting=True, addRandomString=False)
-			if self.sendForm(self.randomMail, self.hostUsername, self.hostPassword) :
-				break
-
-		time.sleep(10)
-		self.activateAccount()
-
-		self.printCredentials()
-		self.writeCfgFiles()
-		self.sabHandler.restart()
-		return True
-
-
-
-if __name__ == '__main__':
-	consequent_errors = 0
-	with ewekaAgent("config.ini", 'eweka') as ua:
-			ua.getTrial()
