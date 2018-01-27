@@ -3,8 +3,10 @@ import stem.process
 import os, platform, signal
 import socks, socket
 
-from bs4 import BeautifulSoup
 import requests
+from robobrowser import RoboBrowser
+
+import imaplib
 
 import datetime, time
 import string
@@ -64,7 +66,7 @@ class usenetAgent:
 		self.cfgHostName = cfgHostName
 		self.sabHostName = sabHostName
 
-		self.socksPort = int(self.cfg['bot']['torPort'])
+		self.mailAddress = self.cfg['MAIL']['name'] + '@' + self.cfg['MAIL']['domain']
 
 		try:
 			pass
@@ -72,7 +74,7 @@ class usenetAgent:
 			self.usedIpList = None
 
 		self.hashDict = {}
-		for key, value in self.cfg['md5_hashes'].items():
+		for key, value in self.cfg[self.cfgHostName]['md5_hashes'].items():
 			self.hashDict[value] = key
 
 	def __enter__(self):
@@ -120,32 +122,40 @@ class usenetAgent:
 		ret = ''.join(str[i] + '.' if int(step / 2 ** i) % 2 == 1 else str[i] for i in range(len(str) - 1))
 		return ret + str[-1]
 
-	def generateRandomMail(self, randomString = None):
+	def generateRandomMail(self, dotting=True, addRandomString=True, randomString = None):
 		if randomString is None:
 			randomString = self.generateRandomString()
-		self.randomMail = self.dotString(self.cfg['MAIL']['name']) + '+' \
-						  + self.cfgHostName + '_' \
-						  + randomString \
-						  + '@' + self.cfg['MAIL']['domain']
+
+		self.randomMail = ''
+
+		if dotting:
+			self.randomMail += self.dotString(self.cfg['MAIL']['name'])
+		else:
+			self.randomMail += self.cfg['MAIL']['name']
+
+		if addRandomString:
+			self.randomMail += '+' + self.cfgHostName + '_' + randomString
+
+		self.randomMail += '@' + self.cfg['MAIL']['domain']
 		return self.randomMail
 
 	def setHostUsername(self, username = None):
 		if username is None:
 			username = self.generateRandomString()
-		self.HostUsername = username
+		self.hostUsername = username
 
 	def setHostPassword(self, password = None):
 		if password is None:
 			password = self.generateRandomString()
-		self.HostPassword = password
+		self.hostPassword = password
 
 	def printCredentials(self):
-		print(term.format(self.HostUsername, term.Color.GREEN))
-		print(term.format(self.HostPassword, term.Color.GREEN))
+		print(term.format(self.hostUsername, term.Color.GREEN))
+		print(term.format(self.hostPassword, term.Color.GREEN))
 
 	def writeCfgFiles(self):
-		self.cfg[self.cfgHostName]['username'] = self.HostUsername
-		self.cfg[self.cfgHostName]['password'] = self.HostPassword
+		self.cfg[self.cfgHostName]['username'] = self.hostUsername
+		self.cfg[self.cfgHostName]['password'] = self.hostPassword
 		self.cfg[self.cfgHostName]['generated'] = datetime.datetime.strftime(datetime.datetime.now(), '%a %d-%m-%Y %H:%M:%S')
 		self.cfg[self.cfgHostName]['worked'] = 0
 		self.cfg.write()
@@ -230,8 +240,6 @@ class ewekaAgent(usenetAgent):
 		return True
 
 
-import re
-from robobrowser import RoboBrowser
 
 if __name__ == '__main__':
 	consequent_errors = 0
