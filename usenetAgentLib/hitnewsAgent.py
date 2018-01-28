@@ -76,20 +76,18 @@ class hitnewsAgent(usenetAgent):
 		consequent_errors = 0
 		while True:
 			n += 1
-			#try:
-			#	self.closeTorConnection()
-			#except:
-			#	pass
-			#try:
 			print(term.format('Trial: %s' % n, term.Color.YELLOW))
-			#self.establishTorConnection()
-			#self.testConnection()
 			self.generateRandomMail()
 			self.setHostUsername(self.generateRandomString())
 			self.setHostPassword(self.generateRandomString())
 			self.generateRandomMail(dotting=True, addRandomString=False)
-			if self.sendForm(self.randomMail, self.hostUsername, self.hostPassword) :
+			if self.sendForm(self.randomMail, self.hostUsername, self.hostPassword):
 				break
+
+			if (consequent_errors > 20):
+				return False
+			else:
+				consequent_errors += 1
 
 		time.sleep(10)
 		self.activateAccount()
