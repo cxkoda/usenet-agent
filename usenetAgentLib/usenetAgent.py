@@ -1,6 +1,6 @@
 from stem.util import term
 import stem.process
-import os, platform, signal
+import os, platform, io
 import socks, socket
 
 import requests, imaplib
@@ -230,3 +230,7 @@ class usenetAgent:
 		result, data = self.imapConnection.uid('fetch', latest_email_uid, '(RFC822)')
 		raw_email = data[0][1]
 		return str(raw_email)
+
+	def writeFile(self, fileName='outfile.txt', parsedString):
+		with io.open(fileName, 'w+', encoding='utf-8') as file:
+			file.write(parsedString)

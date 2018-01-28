@@ -1,6 +1,6 @@
 from .usenetAgent import usenetAgent
 from robobrowser import RoboBrowser
-import io, string
+import string
 import datetime, time
 from stem.util import term
 
@@ -22,6 +22,8 @@ class hitnewsAgent(usenetAgent):
 		browser.submit_form(form)
 		parsed = str(browser.parsed)
 
+		self.writeFile('hitnews_after_form.html', parsed)
+
 		htmlHash = self.hashString(parsed.splitlines()[107])
 
 		try:
@@ -32,17 +34,12 @@ class hitnewsAgent(usenetAgent):
 			print('HTML Hash:', htmlHash, "->", "unknown !!")
 			return False
 
-
-		with io.open('hitnews_after_form.html', 'w+', encoding='utf-8') as htmlFile:
-			htmlFile.write(parsed)
-
 		print('Agreeing to 2nd Form...')
 		form = browser.get_form()
 		form['i_agree'].value = ['1']
 		browser.submit_form(form)
 
-		with io.open('hitnews_after_accepting.html', 'w+', encoding='utf-8') as htmlFile:
-			htmlFile.write(parsed)
+		self.writeFile('hitnews_after_accepting.html', parsed)
 
 		return True
 
@@ -67,8 +64,7 @@ class hitnewsAgent(usenetAgent):
 		browser.open(link)
 		parsed = str(browser.parsed)
 
-		with io.open('hitnews_after_activation.html', 'w+', encoding='utf-8') as htmlFile:
-			htmlFile.write(parsed)
+		self.writeFile('hitnews_after_activation.html', parsed)
 
 
 	def getTrial(self):

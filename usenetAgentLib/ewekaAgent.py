@@ -1,6 +1,5 @@
 from .usenetAgent import usenetAgent
 from robobrowser import RoboBrowser
-import io
 from stem.util import term
 
 class ewekaAgent(usenetAgent):
@@ -17,8 +16,7 @@ class ewekaAgent(usenetAgent):
 		browser.submit_form(form)
 		parsed = str(browser.parsed)
 
-		with io.open('last_response.html', 'w+', encoding='utf-8') as htmlFile:
-			htmlFile.write(parsed)
+		self.writeFile('eweka_after_form.html', parsed)
 
 		htmlHash = self.hashString(parsed)
 		hashFlag = False
@@ -39,8 +37,7 @@ class ewekaAgent(usenetAgent):
 			password = parsed[start:start+len]
 			self.setHostPassword(password)
 
-			with io.open('last_response.html', 'w+', encoding='utf-8') as htmlFile:
-				htmlFile.write(parsed)
+			self.writeFile('last_response.html', parsed)
 
 			return True
 
