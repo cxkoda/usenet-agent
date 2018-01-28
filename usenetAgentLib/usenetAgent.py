@@ -82,12 +82,15 @@ class usenetAgent:
 		self.cfg.write()
 
 	def closeTorConnection(self):
-		subprocess.Popen(["taskkill", "/IM", "tor.exe", "/F"])
-
-		if hasattr(self, 'torProcess'):
-			# print('Killing Tor Process', self.torProcess.pid)
-			# self.torProcess.kill()
-			del self.torProcess
+		if (platform.system() == 'Windows'):
+			subprocess.Popen(["taskkill", "/IM", "tor.exe", "/F"])
+			if hasattr(self, 'torProcess'):
+				del self.torProcess
+		else:
+			if hasattr(self, 'torProcess'):
+				print('Killing Tor Process', self.torProcess.pid)
+				self.torProcess.kill()
+				del self.torProcess
 
 
 	def establishTorConnection(self):
