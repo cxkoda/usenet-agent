@@ -231,6 +231,6 @@ class usenetAgent:
 		raw_email = data[0][1]
 		return str(raw_email)
 
-	def writeFile(self, fileName='outfile.txt', parsedString):
+	def writeFile(self, fileName, parsedString):
 		with io.open(fileName, 'w+', encoding='utf-8') as file:
 			file.write(parsedString)
