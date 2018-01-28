@@ -1,5 +1,5 @@
 from .usenetAgent import usenetAgent
-from robobrowser import RoboBrowser
+
 import string
 import datetime, time
 from stem.util import term
@@ -10,17 +10,16 @@ class hitnewsAgent(usenetAgent):
 
 	def sendForm(self, mail, username, password):
 		print("Sending form")
-		browser = RoboBrowser(history=True)
-		browser.open('https://member.hitnews.com/signup.php')
-		form = browser.get_form()
+		self.browser.open('https://member.hitnews.com/signup.php')
+		form = self.browser.get_form()
 		form['name_f'] = self.generateRandomString(10, string.ascii_lowercase)
 		form['name_l'] = self.generateRandomString(10, string.ascii_lowercase)
 		form['email'] = mail
 		form['login'] = username
 		form['pass0'] = password
 		form['pass1'] = password
-		browser.submit_form(form)
-		parsed = str(browser.parsed)
+		self.browser.submit_form(form)
+		parsed = str(self.browser.parsed)
 
 		self.writeFile('hitnews_after_form.html', parsed)
 
@@ -35,9 +34,9 @@ class hitnewsAgent(usenetAgent):
 			return False
 
 		print('Agreeing to 2nd Form...')
-		form = browser.get_form()
+		form = self.browser.get_form()
 		form['i_agree'].value = ['1']
-		browser.submit_form(form)
+		self.browser.submit_form(form)
 
 		self.writeFile('hitnews_after_accepting.html', parsed)
 
@@ -60,9 +59,8 @@ class hitnewsAgent(usenetAgent):
 			else:
 				time.sleep(1)
 
-		browser = RoboBrowser(history=True)
-		browser.open(link)
-		parsed = str(browser.parsed)
+		self.browser.open(link)
+		parsed = str(self.browser.parsed)
 
 		self.writeFile('hitnews_after_activation.html', parsed)
 

@@ -1,5 +1,5 @@
 from .usenetAgent import usenetAgent
-from robobrowser import RoboBrowser
+
 from stem.util import term
 
 class ewekaAgent(usenetAgent):
@@ -9,12 +9,11 @@ class ewekaAgent(usenetAgent):
 	def sendForm(self, mail):
 		print('Random Trial Mail: %s' % mail)
 
-		browser = RoboBrowser(history=True)
-		browser.open('https://www.eweka.nl/en/free_trial/')
-		form = browser.get_form()
+		self.browser.open('https://www.eweka.nl/en/free_trial/')
+		form = self.browser.get_form()
 		form['email'].value = mail
-		browser.submit_form(form)
-		parsed = str(browser.parsed)
+		self.browser.submit_form(form)
+		parsed = str(self.browser.parsed)
 
 		self.writeFile('eweka_after_form.html', parsed)
 

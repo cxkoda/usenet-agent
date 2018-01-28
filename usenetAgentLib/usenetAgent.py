@@ -4,6 +4,7 @@ import os, platform, io
 import socks, socket
 
 import requests, imaplib
+from robobrowser import RoboBrowser
 
 import datetime
 import string
@@ -64,6 +65,7 @@ class usenetAgent:
 		self.sabHostName = sabHostName
 
 		self.mailAddress = self.cfg['MAIL']['name'] + '@' + self.cfg['MAIL']['domain']
+		self.browser = RoboBrowser(history=True, parser="html5lib")
 
 		try:
 			pass
