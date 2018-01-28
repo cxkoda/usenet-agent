@@ -77,10 +77,10 @@ class hitnewsAgent(usenetAgent):
 		while True:
 			n += 1
 			print(term.format('Trial: %s' % n, term.Color.YELLOW))
-			self.generateRandomMail()
 			self.setHostUsername(self.generateRandomString())
 			self.setHostPassword(self.generateRandomString())
-			self.generateRandomMail(dotting=True, addRandomString=False)
+			step = self.getDottingStep()
+			self.generateDottedMail(step)
 			if self.sendForm(self.randomMail, self.hostUsername, self.hostPassword):
 				break
 

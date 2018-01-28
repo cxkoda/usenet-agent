@@ -119,20 +119,44 @@ class usenetAgent:
 	def generateRandomString(self, size=10, chars=string.ascii_lowercase + string.digits):
 		return ''.join(random.choice(chars) for _ in range(size))
 
-	def dotString(self, str, step=None):
-		if step is None:
-			step = random.randint(0, 2**(len(str)-1))
-		ret = ''.join(str[i] + '.' if int(step / 2 ** i) % 2 == 1 else str[i] for i in range(len(str) - 1))
-		return ret + str[-1]
+	def dotString(self, str, step=None, maxDotting=1):
+		if step is not None:
+			ret = ''.join(str[i] + '.' if (int(step / 2 ** i)) % 2 == 1 else str[i] for i in range(len(str) - 1))
+			return ret + str[-1]
+		else:
+			nBetweens = len(str) - 1
+			selection = ['', '.']
+			dots = [''.join(random.choice(selection) for _ in range(maxDotting)) for _ in range(nBetweens)]
 
-	def generateRandomMail(self, dotting=True, addRandomString=True, randomString = None):
+			ret = ''
+			for i in range(nBetweens):
+				ret += str[i] + dots[i]
+
+			ret += str[-1]
+
+			return ret
+
+	def getDottingStep(self):
+		try:
+			self.dottingStep = int(self.cfg[self.cfgHostName]['dotting_step'])
+		except:
+			self.dottingStep = 1
+		self.cfg[self.cfgHostName]['dotting_step'] = self.dottingStep + 1
+		self.cfg.write()
+		return self.dottingStep
+
+	def generateDottedMail(self, step):
+		self.randomMail = self.dotString(self.cfg['MAIL']['name'], step=step) + '@' + self.cfg['MAIL']['domain']
+		return self.randomMail
+
+	def generateRandomMail(self, dotting=True, addRandomString=True, randomString = None, **kwargs):
 		if randomString is None:
 			randomString = self.generateRandomString()
 
 		self.randomMail = ''
 
 		if dotting:
-			self.randomMail += self.dotString(self.cfg['MAIL']['name'])
+			self.randomMail += self.dotString(self.cfg['MAIL']['name'], **kwargs)
 		else:
 			self.randomMail += self.cfg['MAIL']['name']
 
