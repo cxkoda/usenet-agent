@@ -23,7 +23,7 @@ class hitnewsAgent(usenetAgent):
 
 		self.writeFile('hitnews_after_form.html', parsed)
 
-		htmlHash = self.hashString(parsed.splitlines()[107])
+		htmlHash = self.hashString(parsed.splitlines()[128])
 
 		try:
 			print('Response Hash:', htmlHash, "->", self.hashDict[htmlHash])
