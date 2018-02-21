@@ -1,0 +1,12 @@
+beautifulsoup4==4.6.0
+certifi==2018.1.18
+chardet==3.0.4
+configobj==5.0.6
+idna==2.6
+PySocks==1.6.8
+requests==2.18.4
+robobrowser==0.5.3
+six==1.11.0
+stem==1.6.0
+urllib3==1.22
+Werkzeug==0.14.1
