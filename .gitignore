@@ -1,0 +1,12 @@
+
+\.idea/
+
+1\.nzb
+
+*.html
+
+usenetAgentLib/__pycache__/
+
+*.pyc
+
+venv/

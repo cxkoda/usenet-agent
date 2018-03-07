@@ -34,9 +34,16 @@ class sabnzbdHandler:
 		self.cfgSabnzbd.write()
 
 	def restart(self):
-		SabRestart = 'http://127.0.0.1:8080/api?mode=restart&output=xml&apikey=' + self.cfgSabnzbd['misc']['api_key']
+		adress = self.cfg['sabnzbd']['API_access']['adress']
+		port = self.cfg['sabnzbd']['API_access']['port']
+		api_key = self.cfg['sabnzbd']['API_access']['api_key']
+		payload = {
+			'api_key':api_key,
+			'mode':'restart',
+			'output':'xml'
+		}
 		try:
-			requests.get(SabRestart)
+			requests.get(adress + ":" + port + "/api", params=payload)
 		except requests.exceptions.RequestException:
 			pass
 
@@ -186,12 +193,29 @@ class usenetAgent:
 		print(term.format(self.hostPassword, term.Color.GREEN))
 
 	def writeCfgFiles(self):
-		self.cfg[self.cfgHostName]['username'] = self.hostUsername
-		self.cfg[self.cfgHostName]['password'] = self.hostPassword
-		self.cfg[self.cfgHostName]['generated'] = datetime.datetime.strftime(datetime.datetime.now(), '%a %d-%m-%Y %H:%M:%S')
-		self.cfg[self.cfgHostName]['worked'] = 0
-		self.cfg.write()
-		self.sabHandler.syncSabnzbdEntry(self.cfgHostName, self.sabHostName)
+
+		if self.cfg['sabnzbd']['misc']['useApi'] == "True":
+			print(term.format("Using API access to set User & Password",term.Color.YELLOW))
+			adress = self.cfg['sabnzbd']['API_access']['adress']
+			port = self.cfg['sabnzbd']['API_access']['port']
+
+			payload = {'mode': 'set_config',
+					   'name':self.cfg[self.sabHostName]['name'],
+					   'section': 'servers',
+					   'host':self.cfg[self.sabHostName]['name'],
+					   'username':self.hostUsername,
+					   'password':self.hostPassword,
+					   'apikey': self.cfg['sabnzbd']['API_access']['api_key']}
+
+			requests.get(adress+":"+port+"/api",params=payload)
+		else:
+			self.cfg[self.cfgHostName]['username'] = self.hostUsername
+			self.cfg[self.cfgHostName]['password'] = self.hostPassword
+			self.cfg[self.cfgHostName]['generated'] = datetime.datetime.strftime(datetime.datetime.now(),
+																				 '%a %d-%m-%Y %H:%M:%S')
+			self.cfg[self.cfgHostName]['worked'] = 0
+			self.cfg.write()
+			self.sabHandler.syncSabnzbdEntry(self.cfgHostName, self.sabHostName)
 
 	def hashString(self, parsed):
 		return hashlib.md5(parsed.encode()).hexdigest()

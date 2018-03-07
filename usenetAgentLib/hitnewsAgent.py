@@ -88,5 +88,6 @@ class hitnewsAgent(usenetAgent):
 
 		self.printCredentials()
 		self.writeCfgFiles()
-		self.sabHandler.restart()
+		if not self.cfg['sabnzbd']['misc']['useApi'] == "True":
+			self.sabHandler.restart()
 		return True
