@@ -202,7 +202,7 @@ class usenetAgent:
 			payload = {'mode': 'set_config',
 					   'name':self.cfg[self.sabHostName]['name'],
 					   'section': 'servers',
-					   'host':self.cfg[self.sabHostName]['name'],
+					   'host':self.cfg[self.sabHostName]['host'],
 					   'username':self.hostUsername,
 					   'password':self.hostPassword,
 					   'apikey': self.cfg['sabnzbd']['API_access']['api_key']}
