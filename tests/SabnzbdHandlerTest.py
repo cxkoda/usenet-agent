@@ -1,4 +1,4 @@
-from usenetAgentLib.SabnzbdHandler import SabnzbdHandler
+from UsenetAgent.SabnzbdHandler import SabnzbdHandler
 
 mockConfig = {
     'sabnzbd':

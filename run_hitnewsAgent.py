@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from usenetAgentLib import hitnewsAgent
+from UsenetAgent import hitnewsAgent
 
 
 if __name__ == '__main__':
