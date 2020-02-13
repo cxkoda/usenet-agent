@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-from UsenetAgent import HitnewsAgent
+from UsenetAgent.HitnewsAgent import HitnewsAgent
+from UsenetAgent.ConfigHandler import ConfigHandler
 
 
 if __name__ == '__main__':
-	with HitnewsAgent("config.ini", 'hitnews') as agent:
+	cfgHandler = ConfigHandler('./config')
+	with HitnewsAgent(cfgHandler, 'hitnews') as agent:
 		agent.getTrial()

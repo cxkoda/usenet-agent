@@ -11,16 +11,15 @@ import requests
 import socket
 import socks
 import stem.process
-from configobj import ConfigObj
 from robobrowser import RoboBrowser
 
 from .SabnzbdHandler import SabnzbdHandler
 
 log = logging.getLogger(__name__)
 
-class usenetAgent:
-    def __init__(self, cfgPath, serverName):
-        self.cfg = ConfigObj(cfgPath)
+class UsenetAgent:
+    def __init__(self, cfgHandler, serverName):
+        self.cfg = cfgHandler.cfg
         self.sab = SabnzbdHandler(self.cfg)
         self.serverName = serverName
 
@@ -31,10 +30,6 @@ class usenetAgent:
             pass
         except:
             self.usedIpList = None
-
-        self.hashDict = {}
-        for key, value in self.cfg[self.serverName]['md5_hashes'].items():
-            self.hashDict[value] = key
 
     def __enter__(self):
         return self
@@ -102,10 +97,10 @@ class usenetAgent:
 
     def getDottingStep(self):
         try:
-            self.dottingStep = int(self.cfg[self.serverName]['dotting_step'])
+            self.dottingStep = int(self.cfg['servers'][self.serverName]['dotting_step'])
         except:
             self.dottingStep = 1
-        self.cfg[self.serverName]['dotting_step'] = self.dottingStep + 1
+        self.cfg['servers'][self.serverName]['dotting_step'] = self.dottingStep + 1
         self.cfg.write()
         return self.dottingStep
 
