@@ -17,35 +17,7 @@ import subprocess
 
 from configobj import ConfigObj
 
-class sabnzbdHandler:
-	def __init__(self, cfg):
-		self.cfg = cfg
-		cfgSabnzbdPath = os.getenv(self.cfg['sabnzbd'][platform.system()]['start_dir']) + \
-						 self.cfg['sabnzbd'][platform.system()]['inipath']
-		self.cfgSabnzbd = ConfigObj(cfgSabnzbdPath)
 
-	def syncSabnzbdEntry(self, cfgHostName, sabHostName):
-		try:
-			self.cfgSabnzbd['servers'][sabHostName]['username'] = self.cfg[cfgHostName]['username']
-			self.cfgSabnzbd['servers'][sabHostName]['password'] = self.cfg[cfgHostName]['password']
-		except:
-			self.cfgSabnzbd['servers'][sabHostName] = dict(self.cfg[cfgHostName])
-
-		self.cfgSabnzbd.write()
-
-	def restart(self):
-		adress = self.cfg['sabnzbd']['API_access']['adress']
-		port = self.cfg['sabnzbd']['API_access']['port']
-		api_key = self.cfg['sabnzbd']['API_access']['api_key']
-		payload = {
-			'api_key':api_key,
-			'mode':'restart',
-			'output':'xml'
-		}
-		try:
-			requests.get(adress + ":" + port + "/api", params=payload)
-		except requests.exceptions.RequestException:
-			pass
 
 class usedIPList:
 	def __init__(self, filePath):
