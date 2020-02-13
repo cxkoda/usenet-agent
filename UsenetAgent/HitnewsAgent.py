@@ -1,15 +1,17 @@
-from .usenetAgent import usenetAgent
+from .UsenetAgent import usenetAgent
 
 import string
 import datetime, time
-from stem.util import term
+import logging
 
-class hitnewsAgent(usenetAgent):
+log = logging.getLogger(__name__)
+
+class HitnewsAgent(usenetAgent):
 	def __init__(self, cfgPath, sabHostName='hitnews'):
-		super(hitnewsAgent, self).__init__(cfgPath, 'hitnews', sabHostName)
+		super(HitnewsAgent, self).__init__(cfgPath, 'hitnews', sabHostName)
 
 	def sendForm(self, mail, username, password):
-		print("Sending form")
+		log.info("Sending form")
 		self.browser.open('https://member.hitnews.com/signup.php')
 		form = self.browser.get_form()
 		form['name_f'] = self.generateRandomString(10, string.ascii_lowercase)
@@ -26,14 +28,14 @@ class hitnewsAgent(usenetAgent):
 		htmlHash = self.hashString(parsed.splitlines()[128])
 
 		try:
-			print('Response Hash:', htmlHash, "->", self.hashDict[htmlHash])
+			log.info('Response Hash:', htmlHash, "->", self.hashDict[htmlHash])
 			if self.hashDict[htmlHash] != 'ok':
 				return False
 		except KeyError:
-			print('HTML Hash:', htmlHash, "->", "unknown !!")
+			log.info('HTML Hash:', htmlHash, "->", "unknown !!")
 			return False
 
-		print('Agreeing to 2nd Form...')
+		log.info('Agreeing to 2nd Form...')
 		form = self.browser.get_form()
 		form['i_agree'].value = ['1']
 		self.browser.submit_form(form)
@@ -54,7 +56,7 @@ class hitnewsAgent(usenetAgent):
 
 			if (link != self.cfg[self.sabHostName]['activation_link']):
 				self.cfg[self.sabHostName]['activation_link'] = link
-				print('Activation link found:' + link)
+				log.info('Activation link found:' + link)
 				break
 			else:
 				time.sleep(1)
@@ -70,7 +72,7 @@ class hitnewsAgent(usenetAgent):
 		consequent_errors = 0
 		while True:
 			n += 1
-			print(term.format('Trial: %s' % n, term.Color.YELLOW))
+			log.info(f'Trial: {n}')
 			self.setHostUsername(self.generateRandomString())
 			self.setHostPassword(self.generateRandomString())
 			step = self.getDottingStep()
@@ -87,7 +89,5 @@ class hitnewsAgent(usenetAgent):
 		self.activateAccount()
 
 		self.printCredentials()
-		self.writeCfgFiles()
-		if not self.cfg['sabnzbd']['misc']['useApi'] == "True":
-			self.sabHandler.restart()
+		self.updateSab()
 		return True
