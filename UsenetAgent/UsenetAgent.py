@@ -17,9 +17,9 @@ log = logging.getLogger(__name__)
 
 
 class UsenetAgent:
-    def __init__(self, cfgHandler, serverName):
-        self.cfg = cfgHandler.cfg
-        self.sab = SabnzbdHandler(self.cfg)
+    def __init__(self, cfg, serverName):
+        self.cfg = cfg
+        self.sab = SabnzbdHandler(cfg)
         self.serverName = serverName
 
         self.browser = RoboBrowser(history=True, parser="html5lib")

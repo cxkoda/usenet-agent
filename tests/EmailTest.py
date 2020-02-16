@@ -1,12 +1,12 @@
 import unittest
 from UsenetAgent.EmailHandler import EmailHandler
-from UsenetAgent.ConfigHandler import ConfigHandler
+from UsenetAgent.ConfigLoader import ConfigLoader
 
 
 class EmailTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(EmailTest, self).__init__(*args, **kwargs)
-        self.cfg = ConfigHandler('./').cfg
+        self.cfg = ConfigLoader.load('./config.ini')
         self.email = EmailHandler(self.cfg, 'hitnews')
 
     def testConnection(self):

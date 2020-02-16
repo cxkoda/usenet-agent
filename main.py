@@ -1,11 +1,11 @@
 from UsenetAgent.AgentFactory import getUsenetAgent
-from UsenetAgent.ConfigHandler import ConfigHandler
+from UsenetAgent.ConfigLoader import ConfigLoader
 
 if __name__ == '__main__':
-    cfgHandler = ConfigHandler('./config')
-    for serverName in cfgHandler.cfg['servers']:
-        host = cfgHandler.cfg['servers'][serverName]['host']
-        agent = getUsenetAgent(host, cfgHandler, serverName)
+    cfg = ConfigLoader.load()
+    for serverName in cfg['servers']:
+        host = cfg['servers'][serverName]['host']
+        agent = getUsenetAgent(host, cfg, serverName)
 
         if agent is None:
             continue
