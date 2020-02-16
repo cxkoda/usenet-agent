@@ -3,7 +3,9 @@ import string
 import imaplib
 
 import logging
+
 log = logging.getLogger(__name__)
+
 
 class EmailHandler:
     def __init__(self, cfg, serverName):
@@ -81,12 +83,13 @@ class EmailHandler:
         return ok == 'OK'
 
     def disconnect(self):
-        self.imapConnection.close()
-        del self.imapConnection
+        if hasattr(self, 'imapConnection'):
+            self.imapConnection.close()
+            del self.imapConnection
 
     def fetchLatestMail(self, mailSubject=None, sinceDate=None):
         if not hasattr(self, 'imapConnection'):
-            self.establishImapConnection()
+            self.connect()
 
         searchFilters = []
         if mailSubject is not None:
@@ -103,7 +106,14 @@ class EmailHandler:
 
         result, data = self.imapConnection.uid('search', None, searchCommand)
 
+        inboxEmpty = (data[0] == b'')
+        if inboxEmpty:
+            return ""
+
         latest_email_uid = data[0].split()[-1]
         result, data = self.imapConnection.uid('fetch', latest_email_uid, '(RFC822)')
-        raw_email = data[0][1]
-        return str(raw_email)
+
+        if result == "OK":
+            return data[0][1].decode('utf-8')
+        else:
+            return ""
