@@ -56,7 +56,7 @@ class EmailHandler:
             randomMail += self.cfg['MAIL']['name']
 
         if addRandomString:
-            randomMail += '+' + self.serverName + '_' + randomString
+            randomMail += self.cfg['MAIL']['extension_delimiter'] + self.serverName + '_' + randomString
 
         randomMail += '@' + self.cfg['MAIL']['domain']
         return randomMail
