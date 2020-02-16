@@ -28,6 +28,9 @@ class SabnzbdHandler:
     def checkResponse(self, response):
         if response.text.startswith('error'):
             log.error(response.text)
+            return False
+        else:
+            return True
 
     def addServer(self, serverName, username, password):
         log.debug(f'Adding server {serverName}')
@@ -43,10 +46,9 @@ class SabnzbdHandler:
             response = self.sendApiRequest(payload)
         except requests.exceptions.RequestException as e:
             log.error(e)
+            return False
 
-        self.checkResponse(response)
-        return response
-
+        return self.checkResponse(response)
 
     def restart(self):
         log.info('Restarting')
@@ -58,6 +60,6 @@ class SabnzbdHandler:
             response = self.sendApiRequest(payload)
         except requests.exceptions.RequestException as e:
             log.error(e)
+            return False
 
-        self.checkResponse(response)
-        return response
+        return self.checkResponse(response)
