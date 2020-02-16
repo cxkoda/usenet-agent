@@ -38,7 +38,7 @@ class HitnewsAgent(UsenetAgent):
         self.browser.submit_form(form)
         parsed = str(self.browser.parsed)
 
-        self.writeFile('hitnews_after_form.html', parsed)
+        # self.writeFile('hitnews_after_form.html', parsed)
 
         htmlHash = self.hashString(parsed.splitlines()[128])
 
@@ -55,7 +55,7 @@ class HitnewsAgent(UsenetAgent):
         form['i_agree'].value = ['1']
         self.browser.submit_form(form)
 
-        self.writeFile('hitnews_after_accepting.html', parsed)
+        # self.writeFile('hitnews_after_accepting.html', parsed)
 
         return True
 
@@ -83,7 +83,7 @@ class HitnewsAgent(UsenetAgent):
         self.browser.open(link)
         parsed = str(self.browser.parsed)
 
-        self.writeFile('hitnews_after_activation.html', parsed)
+        # self.writeFile('hitnews_after_activation.html', parsed)
 
     def getTrial(self):
         n = 0
