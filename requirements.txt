@@ -7,6 +7,7 @@ idna==2.6
 PySocks==1.6.8
 requests==2.18.4
 robobrowser==0.5.3
+schedule==0.6.0
 six==1.11.0
 soupsieve==1.9.5
 stem==1.6.0

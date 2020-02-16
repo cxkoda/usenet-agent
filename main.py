@@ -1,7 +1,8 @@
 from UsenetAgent.AgentFactory import getUsenetAgent
 from UsenetAgent.ConfigLoader import ConfigLoader
 
-if __name__ == '__main__':
+
+def main():
     cfg = ConfigLoader.load()
     for serverName in cfg['servers']:
         host = cfg['servers'][serverName]['host']
@@ -11,3 +12,7 @@ if __name__ == '__main__':
             continue
         else:
             agent.getTrial()
+
+
+if __name__ == '__main__':
+    main()
