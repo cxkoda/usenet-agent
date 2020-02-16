@@ -1,13 +1,16 @@
 import requests
 import logging
+from distutils.util import strtobool
+
 log = logging.getLogger(__name__)
+
 
 class SabnzbdHandler:
     def __init__(self, cfg):
         self.cfg = cfg
 
     def getConnectionAdapter(self):
-        if self.cfg['sabnzbd']['ssl']:
+        if strtobool(self.cfg['sabnzbd']['ssl']):
             return 'https://'
         else:
             return 'http://'
