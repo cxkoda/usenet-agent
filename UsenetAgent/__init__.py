@@ -9,6 +9,3 @@ console.setLevel(logging.DEBUG)
 console.setFormatter(formatter)
 
 log.addHandler(console)
-
-
-

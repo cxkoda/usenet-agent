@@ -12,7 +12,9 @@ from robobrowser import RoboBrowser
 from .SabnzbdHandler import SabnzbdHandler
 
 import logging
+
 log = logging.getLogger(__name__)
+
 
 class UsenetAgent:
     def __init__(self, cfgHandler, serverName):
@@ -74,10 +76,9 @@ class UsenetAgent:
     def hashString(self, parsed):
         return hashlib.md5(parsed.encode()).hexdigest()
 
-
     def writeFile(self, fileName, parsedString):
         with io.open(fileName, 'w+', encoding='utf-8') as file:
             file.write(parsedString)
-            
+
     def updateSab(self, username, password):
         self.sab.addServer(self.serverName, username, password)
