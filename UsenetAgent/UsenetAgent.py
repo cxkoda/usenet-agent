@@ -48,7 +48,7 @@ class UsenetAgent:
                 del self.torProcess
 
     def establishTorConnection(self):
-        self.socksPort = int(self.cfg['bot']['torPort'])
+        self.socksPort = int(self.cfg['agent']['torPort'])
 
         def print_bootstrap_lines(line):
             if "Bootstrapped " in line:
