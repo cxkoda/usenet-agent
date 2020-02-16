@@ -1,6 +1,5 @@
 import requests
 import logging
-
 log = logging.getLogger(__name__)
 
 class SabnzbdHandler:
@@ -28,6 +27,7 @@ class SabnzbdHandler:
             log.error(response.text)
 
     def addServer(self, serverName, username, password):
+        log.debug(f'Adding server {serverName}')
         payload = {
             'mode': 'set_config',
             'section': 'servers',
@@ -46,6 +46,7 @@ class SabnzbdHandler:
 
 
     def restart(self):
+        log.info('Restarting')
         payload = {
             'mode': 'restart',
             'output': 'xml'

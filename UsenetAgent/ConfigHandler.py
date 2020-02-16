@@ -1,11 +1,12 @@
 from configobj import ConfigObj
 import os
-import logging
 
+import logging
 log = logging.getLogger(__name__)
 
 class ConfigHandler:
     def __init__(self, path=None):
+        log.info("creating config")
         if path is not None:
             self.loadConfigFiles(path)
         else:

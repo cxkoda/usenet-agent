@@ -1,13 +1,16 @@
 from .UsenetAgent import UsenetAgent
+from .EmailHandler import EmailHandler
 
 import string
 import datetime, time
-import logging
+import random
 
+import logging
 log = logging.getLogger(__name__)
 
 class HitnewsAgent(UsenetAgent):
     def __init__(self, cfgHandler, serverName):
+        log.info(f"Setting up HitnewsAgent for {serverName}")
         super(HitnewsAgent, self).__init__(cfgHandler, serverName)
         self.hashDict = {
             'bb1cd48c90192510bc15281a5a353e8b': 'ok',
@@ -15,8 +18,13 @@ class HitnewsAgent(UsenetAgent):
             '98746b4749692ce29d7cda5855a70105': 'already_used_email'
         }
 
+        self.email = EmailHandler(self.cfg, serverName)
+
+    def generateRandomString(self, size=10, chars=string.ascii_lowercase + string.digits):
+        return ''.join(random.choice(chars) for _ in range(size))
+
     def sendForm(self, mail, username, password):
-        log.info("Sending form")
+        log.debug("Sending form")
         self.browser.open('https://member.hitnews.com/signup.php')
         form = self.browser.get_form()
         form['name_f'] = self.generateRandomString(10, string.ascii_lowercase)
@@ -33,14 +41,14 @@ class HitnewsAgent(UsenetAgent):
         htmlHash = self.hashString(parsed.splitlines()[128])
 
         try:
-            log.info('Response Hash:', htmlHash, "->", self.hashDict[htmlHash])
+            log.debug(f'Response Hash: {htmlHash} -> {self.hashDict[htmlHash]}')
             if self.hashDict[htmlHash] != 'ok':
                 return False
         except KeyError:
-            log.info('HTML Hash:', htmlHash, "->", "unknown !!")
+            log.error(f'HTML Hash: {htmlHash} -> unknown !!')
             return False
 
-        log.info('Agreeing to 2nd Form...')
+        log.debug('Agreeing to 2nd Form...')
         form = self.browser.get_form()
         form['i_agree'].value = ['1']
         self.browser.submit_form(form)
@@ -50,16 +58,16 @@ class HitnewsAgent(UsenetAgent):
         return True
 
     def activateAccount(self):
-        self.establishImapConnection()
+        self.email.establishImapConnection()
 
         while (True):
-            mail_text = self.fetchLatestMail(mailSubject="Hitnews.com - Account Activation",
+            mail_text = self.email.fetchLatestMail(mailSubject="Hitnews.com - Account Activation",
                                              sinceDate=datetime.date.today() - datetime.timedelta(1))
             link_begin = mail_text.find('https://member.hitnews.com/signup.php?cs=')
             link = mail_text[link_begin:link_begin + 61]
 
-            if (link != self.cfg[self.sabHostName]['activation_link']):
-                self.cfg[self.sabHostName]['activation_link'] = link
+            if (link != self.cfg[self.serverName]['activation_link']):
+                self.cfg[self.serverName]['activation_link'] = link
                 log.info('Activation link found:' + link)
                 break
             else:
@@ -75,12 +83,12 @@ class HitnewsAgent(UsenetAgent):
         consequent_errors = 0
         while True:
             n += 1
-            log.info(f'Trial: {n}')
-            self.setHostUsername(self.generateRandomString())
-            self.setHostPassword(self.generateRandomString())
-            step = self.getDottingStep()
-            self.generateDottedMail(step)
-            if self.sendForm(self.randomMail, self.hostUsername, self.hostPassword):
+            username = self.generateRandomString()
+            password = self.generateRandomString()
+            randomMail = self.email.generateRandomMail(dotting=False)
+            log.debug(f'Trial: {n}: {randomMail}')
+
+            if self.sendForm(randomMail, username, password):
                 break
 
             if (consequent_errors > 20):
@@ -91,6 +99,8 @@ class HitnewsAgent(UsenetAgent):
         time.sleep(10)
         self.activateAccount()
 
-        self.printCredentials()
+        log.info(f'Account generated for {self.serverName} generated after {n} trials')
+        log.debug(f'username: {username}')
+        log.debug(f'password: {password}')
         self.updateSab()
         return True
