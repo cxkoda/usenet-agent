@@ -6,7 +6,9 @@ import datetime, time
 import random
 
 import logging
+
 log = logging.getLogger(__name__)
+
 
 class HitnewsAgent(UsenetAgent):
     def __init__(self, cfgHandler, serverName):
@@ -57,21 +59,26 @@ class HitnewsAgent(UsenetAgent):
 
         return True
 
-    def activateAccount(self):
-        self.email.establishImapConnection()
+    def activateAccount(self, randomMail):
+        while True:
+            self.email.disconnect()
+            self.email.connect()
 
-        while (True):
             mail_text = self.email.fetchLatestMail(mailSubject="Hitnews.com - Account Activation",
-                                             sinceDate=datetime.date.today() - datetime.timedelta(1))
+                                                   sinceDate=datetime.date.today() - datetime.timedelta(1))
+
+            recipientBegin = mail_text.find('Delivered-To:') + 14
+            recipient = mail_text[recipientBegin: recipientBegin + len(randomMail)]
+
+            if recipient != randomMail:
+                time.sleep(1)
+                continue
+
             link_begin = mail_text.find('https://member.hitnews.com/signup.php?cs=')
             link = mail_text[link_begin:link_begin + 61]
 
-            if (link != self.cfg[self.serverName]['activation_link']):
-                self.cfg[self.serverName]['activation_link'] = link
-                log.info('Activation link found:' + link)
-                break
-            else:
-                time.sleep(1)
+            log.info('Activation link found:' + link)
+            break
 
         self.browser.open(link)
         parsed = str(self.browser.parsed)
@@ -96,11 +103,10 @@ class HitnewsAgent(UsenetAgent):
             else:
                 consequent_errors += 1
 
-        time.sleep(10)
-        self.activateAccount()
+        self.activateAccount(randomMail)
 
         log.info(f'Account generated for {self.serverName} generated after {n} trials')
         log.debug(f'username: {username}')
         log.debug(f'password: {password}')
-        self.updateSab()
+        self.updateSab(username, password)
         return True
