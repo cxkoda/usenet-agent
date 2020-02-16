@@ -38,6 +38,9 @@ class SabnzbdHandler:
             'mode': 'set_config',
             'section': 'servers',
             'name': serverName,
+            'host': self.cfg['servers'][serverName]['host'],
+            'port': self.cfg['servers'][serverName]['port'],
+            'ssl': strtobool(self.cfg['servers'][serverName]['ssl']),
             'username': username,
             'password': password,
             'connections': 5
