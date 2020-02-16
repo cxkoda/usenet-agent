@@ -2,14 +2,14 @@ beautifulsoup4==4.6.0
 certifi==2018.1.18
 chardet==3.0.4
 configobj==5.0.6
+html5lib==1.0.1
 idna==2.6
 PySocks==1.6.8
 requests==2.18.4
 robobrowser==0.5.3
 six==1.11.0
+soupsieve==1.9.5
 stem==1.6.0
 urllib3==1.22
+webencodings==0.5.1
 Werkzeug==0.14.1
-lxml==4.1.1
-html5lib==1.0.1
-pynzb==0.1.0
