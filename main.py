@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from UsenetAgent.AgentFactory import getUsenetAgent
 from UsenetAgent.ConfigLoader import ConfigLoader
 
