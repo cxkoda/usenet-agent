@@ -17,6 +17,7 @@ class HitnewsAgent(UsenetAgent):
         self.hashDict = {
             'bb1cd48c90192510bc15281a5a353e8b': 'ok',
             '2f5079bb3ba571927d49f00ec4374b50': 'invalid_email',
+            '8404dff87117eb65e316a6aa7a6171dd': 'invalid_email',
             '98746b4749692ce29d7cda5855a70105': 'already_used_email'
         }
 
@@ -48,6 +49,8 @@ class HitnewsAgent(UsenetAgent):
                 return False
         except KeyError:
             log.error(f'HTML Hash: {htmlHash} -> unknown !!')
+            with open('hitnews-send-form-response.html', 'w') as html:
+                html.write(parsed)
             return False
 
         log.debug('Agreeing to 2nd Form...')
