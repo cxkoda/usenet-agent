@@ -1,6 +1,7 @@
 import random
 import string
 import imaplib
+import email
 
 import logging
 
@@ -87,7 +88,7 @@ class EmailHandler:
             self.imapConnection.close()
             del self.imapConnection
 
-    def fetchLatestMail(self, mailSubject=None, sinceDate=None):
+    def fetchLatestMail(self, mailSubject=None, sinceDate=None, recipient=None):
         if not hasattr(self, 'imapConnection'):
             self.connect()
 
@@ -99,10 +100,15 @@ class EmailHandler:
             date = sinceDate.strftime("%d-%b-%Y")
             searchFilters.append('SENTSINCE {date}'.format(date=date))
 
+        if recipient is not None:
+            searchFilters.append(f'HEADER Delivered-To "{recipient}"')
+
         if searchFilters == []:
             searchCommand = 'ALL'
         else:
             searchCommand = '(' + ' '.join(searchFilters) + ')'
+
+        log.debug(f"Fetching Latest mail with {searchCommand}")
 
         result, data = self.imapConnection.uid('search', None, searchCommand)
 
@@ -114,6 +120,8 @@ class EmailHandler:
         result, data = self.imapConnection.uid('fetch', latest_email_uid, '(RFC822)')
 
         if result == "OK":
-            return data[0][1].decode('utf-8')
+            body = data[0][1]
+            msg = email.message_from_bytes(body)
+            return msg
         else:
-            return ""
+            return None
