@@ -1,13 +1,7 @@
 from .UsenetAgent import UsenetAgent
 from .EmailHandler import EmailHandler
-
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-
-
+import io
+import json
 import re
 
 import logging
@@ -20,10 +14,6 @@ class UsernetFarmAgent(UsenetAgent):
         log.info(f"Setting up UsernetFarmAgent for {serverName}")
         super(UsernetFarmAgent, self).__init__(cfgHandler, serverName)
         self.email = EmailHandler(self.cfg, serverName)
-
-        options = Options()
-        options.headless = True
-        self.driver = webdriver.Firefox(options=options)
 
     def checkFormResponse(self, response):
         hashDict = {
@@ -100,31 +90,10 @@ class UsernetFarmAgent(UsenetAgent):
             mail_text = self.email.fetchLatestMail(mailSubject="Activated your trial account",
                                                    recipient=randomMail)
 
-        mail_text = mail_text.as_string()
-        mail_text = str(mail_text).replace('=\n', '', -1)
+        self.browser.open("https://usenet.farm/action/config/userpass")
+        data = json.load(io.BytesIO(self.browser.response.content))
 
-        link = re.search("\[!Config assistant\]\((.*?)\)", mail_text).group(0)
-        link = link.split('(')[-1][:-1]
-
-        # Cut away the first 3D after uuid=..
-        link = link.replace('=3D', '=', -1)
-
-        log.info(f'Config link found: {link}')
-
-        # Since this part requires javascript we have to use selenium
-        self.driver.get(link)
-
-        button = WebDriverWait(self.driver, 1).until(EC.presence_of_element_located((By.LINK_TEXT, 'SabNZBd')))
-        button.click()
-
-        configTable = WebDriverWait(self.driver, 1).until(EC.presence_of_element_located((By.TAG_NAME, 'table')))
-
-        config = {}
-        for line in configTable.text.split("\n"):
-            entry = line.split(' ')
-            config[entry[0]] = entry[1]
-
-        return config["Username"], config["Password"]
+        return data["user"], data["pass"]
 
     def getTrial(self):
         maxErrors = 20
