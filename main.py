@@ -6,9 +6,9 @@ from UsenetAgent.ConfigLoader import ConfigLoader
 
 def main():
     cfg = ConfigLoader.load()
-    for serverName in cfg['servers']:
-        host = cfg['servers'][serverName]['host']
-        agent = getUsenetAgent(host, cfg, serverName)
+    for agentName in cfg['servers']:
+        host = cfg['servers'][agentName]['host']
+        agent = getUsenetAgent(host, cfg, agentName)
 
         if agent is None:
             continue

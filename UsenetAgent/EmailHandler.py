@@ -9,10 +9,8 @@ log = logging.getLogger(__name__)
 
 
 class EmailHandler:
-    def __init__(self, cfg, serverName):
+    def __init__(self, cfg):
         self.cfg = cfg
-        self.serverName = serverName
-        self.mailAddress = self.cfg['MAIL']['name'] + '@' + self.cfg['MAIL']['domain']
 
     def generateRandomString(self, size=10, chars=string.ascii_lowercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
@@ -34,30 +32,18 @@ class EmailHandler:
 
             return ret
 
-    def getDottingStep(self):
-        try:
-            self.dottingStep = int(self.cfg['servers'][self.serverName]['dotting_step'])
-        except:
-            self.dottingStep = 1
-        self.cfg['servers'][self.serverName]['dotting_step'] = self.dottingStep + 1
-        self.cfg.write()
-        return self.dottingStep
-
-    def generateDottedMail(self, step):
-        return self.dotString(self.cfg['MAIL']['name'], step=step) + '@' + self.cfg['MAIL']['domain']
-
-    def generateRandomMail(self, dotting=True, addRandomString=True, randomString=None, **kwargs):
+    def generateRandomMail(self, dottingStep=-1, addRandomString=True, randomString=None, identifier=""):
         if randomString is None:
             randomString = self.generateRandomString()
 
         randomMail = ''
-        if dotting:
-            randomMail += self.dotString(self.cfg['MAIL']['name'], **kwargs)
+        if dottingStep > 0:
+            randomMail += self.dotString(self.cfg['MAIL']['name'], dottingStep)
         else:
             randomMail += self.cfg['MAIL']['name']
 
         if addRandomString:
-            randomMail += self.cfg['MAIL']['extension_delimiter'] + self.serverName + '_' + randomString
+            randomMail += self.cfg['MAIL']['extension_delimiter'] + identifier + '_' + randomString
 
         randomMail += '@' + self.cfg['MAIL']['domain']
         return randomMail

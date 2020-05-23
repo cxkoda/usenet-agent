@@ -17,10 +17,11 @@ log = logging.getLogger(__name__)
 
 
 class UsenetAgent:
-    def __init__(self, cfg, serverName):
+    def __init__(self, cfg, agentName, hostConfig):
         self.cfg = cfg
         self.sab = SabnzbdHandler(cfg)
-        self.serverName = serverName
+        self.agentName = agentName
+        self.hostConfig = hostConfig
 
         self.browser = RoboBrowser(history=True, parser="html5lib")
 
@@ -81,4 +82,4 @@ class UsenetAgent:
             file.write(parsedString)
 
     def updateSab(self, username, password):
-        self.sab.addServer(self.serverName, username, password)
+        self.sab.addServer(self.agentName, username, password, self.hostConfig)

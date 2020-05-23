@@ -1,5 +1,6 @@
 from .UsenetAgent import UsenetAgent
 from .EmailHandler import EmailHandler
+from .HostConfig import HostConfig
 
 import string
 import datetime, time
@@ -11,9 +12,11 @@ log = logging.getLogger(__name__)
 
 
 class HitnewsAgent(UsenetAgent):
-    def __init__(self, cfgHandler, serverName):
-        log.info(f"Setting up HitnewsAgent for {serverName}")
-        super(HitnewsAgent, self).__init__(cfgHandler, serverName)
+    def __init__(self, cfgHandler, agentName):
+        log.info(f"Setting up HitnewsAgent for {agentName}")
+
+        defaultHostConfig = HostConfig(host="free.hitnews.com", ssl=False, connections=5)
+        super(HitnewsAgent, self).__init__(cfgHandler, agentName, defaultHostConfig)
         self.hashDict = {
             'bb1cd48c90192510bc15281a5a353e8b': 'ok',
             '2f5079bb3ba571927d49f00ec4374b50': 'invalid_email',
@@ -21,7 +24,7 @@ class HitnewsAgent(UsenetAgent):
             '98746b4749692ce29d7cda5855a70105': 'already_used_email'
         }
 
-        self.email = EmailHandler(self.cfg, serverName)
+        self.email = EmailHandler(self.cfg)
 
     def generateRandomString(self, size=10, chars=string.ascii_lowercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
@@ -95,7 +98,7 @@ class HitnewsAgent(UsenetAgent):
             n += 1
             username = self.generateRandomString()
             password = self.generateRandomString()
-            randomMail = self.email.generateRandomMail(dotting=False)
+            randomMail = self.email.generateRandomMail(identifier=self.agentName)
             log.debug(f'Trial: {n}: {randomMail}')
 
             if self.sendForm(randomMail, username, password):
@@ -108,7 +111,7 @@ class HitnewsAgent(UsenetAgent):
 
         self.activateAccount(randomMail)
 
-        log.info(f'Account generated for {self.serverName} generated after {n} trials')
+        log.info(f'Account generated for {self.agentName} generated after {n} trials')
         log.debug(f'username: {username}')
         log.debug(f'password: {password}')
         self.updateSab(username, password)

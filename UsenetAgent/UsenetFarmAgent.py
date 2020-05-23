@@ -1,5 +1,7 @@
 from .UsenetAgent import UsenetAgent
 from .EmailHandler import EmailHandler
+from .HostConfig import HostConfig
+
 import io
 import json
 import re
@@ -10,10 +12,11 @@ log = logging.getLogger(__name__)
 
 
 class UsernetFarmAgent(UsenetAgent):
-    def __init__(self, cfgHandler, serverName):
-        log.info(f"Setting up UsernetFarmAgent for {serverName}")
-        super(UsernetFarmAgent, self).__init__(cfgHandler, serverName)
-        self.email = EmailHandler(self.cfg, serverName)
+    def __init__(self, cfgHandler, agentName):
+        log.info(f"Setting up UsernetFarmAgent for {agentName}")
+        defaultHostConfig = HostConfig(host="news.usenet.farm", ssl=True, connections=40)
+        super(UsernetFarmAgent, self).__init__(cfgHandler, agentName, defaultHostConfig)
+        self.email = EmailHandler(self.cfg)
 
     def checkFormResponse(self, response):
         hashDict = {
@@ -28,9 +31,9 @@ class UsernetFarmAgent(UsenetAgent):
 
         try:
             log.debug(f'Response Hash: {htmlHash} -> {hashDict[htmlHash]}')
-            if self.hashDict[htmlHash] == 'banned':
+            if hashDict[htmlHash] == 'banned':
                 raise Exception('Fuck!')
-            elif self.hashDict[htmlHash] == 'ok':
+            elif hashDict[htmlHash] == 'ok':
                 return True
             else:
                 return False
@@ -65,7 +68,6 @@ class UsernetFarmAgent(UsenetAgent):
             mail_text = self.email.fetchLatestMail(mailSubject="Activate your account",
                                                    recipient=randomMail)
 
-        mail_text = mail_text.as_string()
         mail_text = str(mail_text).replace('=\n', '', -1)
 
         link = re.search("\[!Activate now\]\((.*?)\)", mail_text).group(0)
@@ -98,17 +100,16 @@ class UsernetFarmAgent(UsenetAgent):
     def getTrial(self):
         maxErrors = 20
         for n in range(maxErrors):
-            randomMail = self.email.generateRandomMail(dotting=False)
+            randomMail = self.email.generateRandomMail(identifier=self.agentName)
             log.debug(f'Trial: {n}: {randomMail}')
             ok = self.sendForm(randomMail)
-
             if ok:
                 break
 
         self.activateAccount(randomMail)
         username, password = self.getCredentials(randomMail)
 
-        log.info(f'Account generated for {self.serverName} generated after {n} trials')
+        log.info(f'Account generated for {self.agentName} generated after {n} trials')
         log.debug(f'username: {username}')
         log.debug(f'password: {password}')
         self.updateSab(username, password)

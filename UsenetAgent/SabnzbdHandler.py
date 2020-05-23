@@ -32,18 +32,18 @@ class SabnzbdHandler:
         else:
             return True
 
-    def addServer(self, serverName, username, password):
+    def addServer(self, serverName, username, password, hostConfig):
         log.debug(f'Adding server {serverName}')
         payload = {
             'mode': 'set_config',
             'section': 'servers',
             'name': serverName,
-            'host': self.cfg['servers'][serverName]['host'],
-            'port': self.cfg['servers'][serverName]['port'],
-            'ssl': strtobool(self.cfg['servers'][serverName]['ssl']),
+            'host': hostConfig.host,
+            'port': hostConfig.port,
+            'ssl': hostConfig.ssl,
             'username': username,
             'password': password,
-            'connections': 5
+            'connections': hostConfig.connections
         }
         try:
             response = self.sendApiRequest(payload)
