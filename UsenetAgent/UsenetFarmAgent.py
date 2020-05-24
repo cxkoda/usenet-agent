@@ -1,6 +1,7 @@
 from .UsenetAgent import UsenetAgent
 from .EmailHandler import EmailHandler
 from .HostConfig import HostConfig
+from .utils import retry
 
 import io
 import json
@@ -63,11 +64,11 @@ class UsernetFarmAgent(UsenetAgent):
         return ok
 
     def activateAccount(self, randomMail):
-        mail_text = None
-        while mail_text is None:
-            mail_text = self.email.fetchLatestMail(mailSubject="Activate your account",
-                                                   recipient=randomMail)
+        def getActivationMail():
+            mail_text = self.email.fetchLatestMail(mailSubject="Activate your account", recipient=randomMail)
+            return mail_text is not None, mail_text
 
+        mail_text = retry(getActivationMail, maxretries=20, timeout=1)
         mail_text = str(mail_text).replace('=\n', '', -1)
 
         link = re.search("\[!Activate now\]\((.*?)\)", mail_text).group(0)
@@ -87,10 +88,11 @@ class UsernetFarmAgent(UsenetAgent):
         return parsed
 
     def getCredentials(self, randomMail):
-        mail_text = None
-        while mail_text is None:
-            mail_text = self.email.fetchLatestMail(mailSubject="Activated your trial account",
-                                                   recipient=randomMail)
+        def getActivationMail():
+            mail_text = self.email.fetchLatestMail(mailSubject="Activated your trial account", recipient=randomMail)
+            return mail_text is not None, None
+
+        retry(getActivationMail, maxretries=20, timeout=1)
 
         self.browser.open("https://usenet.farm/action/config/userpass")
         data = json.load(io.BytesIO(self.browser.response.content))
@@ -98,18 +100,16 @@ class UsernetFarmAgent(UsenetAgent):
         return data["user"], data["pass"]
 
     def getTrial(self):
-        maxErrors = 20
-        for n in range(maxErrors):
+        def doFillAndSend():
             randomMail = self.email.generateRandomMail(identifier=self.agentName)
-            log.debug(f'Trial: {n}: {randomMail}')
-            ok = self.sendForm(randomMail)
-            if ok:
-                break
+            success = self.sendForm(randomMail)
+            return success, randomMail
 
+        randomMail = retry(doFillAndSend, maxretries=10)
         self.activateAccount(randomMail)
         username, password = self.getCredentials(randomMail)
 
-        log.info(f'Account generated for {self.agentName} generated after {n} trials')
+        log.info(f'Account generated for {self.agentName}')
         log.debug(f'username: {username}')
         log.debug(f'password: {password}')
         self.updateSab(username, password)
