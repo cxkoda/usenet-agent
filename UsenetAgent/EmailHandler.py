@@ -100,7 +100,7 @@ class EmailHandler:
 
         inboxEmpty = (data[0] == b'')
         if inboxEmpty:
-            return ""
+            return None
 
         latest_email_uid = data[0].split()[-1]
         result, data = self.imapConnection.uid('fetch', latest_email_uid, '(RFC822)')
