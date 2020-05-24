@@ -24,6 +24,7 @@ class UsernetFarmAgent(UsenetAgent):
             '927cebcb8a0b52a93a2810a9cf88bba3': 'ok',
             'd582643efc080479fbff83bab3f9da66': 'invalid_email',
             'af0dd8fd70f5bb562ab889b3a2153715': 'banned',
+            'aea30385da16f6a7e75dbd4332904744': 'banned',
             '3003850bff8d1072651fde9063e33200': 'already_used_email'
         }
 
@@ -41,19 +42,21 @@ class UsernetFarmAgent(UsenetAgent):
         except KeyError:
             log.error(f'{toHash}')
             log.error(f'HTML Hash: {htmlHash} -> unknown !!')
-            with open('farm-send-form-response.html', 'w') as html:
+            dumpFileName = 'farm-send-form-response.html'
+            log.error(f'Dumping html to {dumpFileName}')
+            with open(dumpFileName, 'w') as html:
                 html.write(response)
             raise Exception("Unknown response")
 
-    def sendForm(self, mail, withTor=False):
-        log.debug("Sending form")
+    def sendForm(self, randomMail, withTor=False):
+        log.debug(f'Sending form for {randomMail}')
 
         if withTor:
             self.establishTorConnection()
 
         self.browser.open('https://usenet.farm/')
         form = self.browser.get_form()
-        form['email'] = mail
+        form['email'] = randomMail
         self.browser.submit_form(form)
 
         if withTor:
