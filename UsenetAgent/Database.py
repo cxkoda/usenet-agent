@@ -15,5 +15,9 @@ class Database:
     def getAllConnections(self):
         return self.session.query(UsenetAccount).order_by(UsenetAccount.id)
 
-    def findValidConnections(self):
-        return self.session.query(UsenetAccount).order_by(UsenetAccount.id).filter(UsenetAccount.valid)
+    def findValidConnections(self, hostname: str = None):
+        valids = self.session.query(UsenetAccount).order_by(UsenetAccount.id).filter(UsenetAccount.valid)
+        if hostname is not None:
+            return valids.filter(UsenetAccount.host == hostname)
+        else:
+            return valids
