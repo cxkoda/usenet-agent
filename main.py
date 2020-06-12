@@ -27,28 +27,48 @@ def getUsenetAgent(cfg, hostname):
     else:
         raise Exception("Unknown Host, no Agent available")
 
+
 def getHost(cfg, hostname):
     host = cfg['hosts'][hostname]
-    host['ssl'] = strtobool(host['ssl'])
+    try:
+        host['ssl'] = strtobool(host['ssl'])
+    except:
+        pass
     return HostConfig(**host)
+
 
 def main():
     cfg = ConfigLoader.load()
     db = Database(sqla.create_engine(f"sqlite:///{cfg['agent']['database']}"))
     sab = SabnzbdHandler(cfg)
 
+    for acc in db.findValidConnections():
+        host = getHost(cfg, acc.host)
+        acc.valid = acc.checkLogin(host)
+        db.session.add(acc)
+    db.session.commit()
+
+    accountsInUse = set()
+
     for serverName in cfg['servers']:
         try:
             hostname = cfg['servers'][serverName]['host']
             host = getHost(cfg, hostname)
 
-            agent = getUsenetAgent(cfg, hostname)
-            account = agent.getTrial()
-            account.host = hostname
+            availableAccounts = [acc for acc in db.findValidConnections(hostname)
+                                 if acc not in accountsInUse]
 
-            db.session.add(account)
-            db.session.commit()
+            if len(availableAccounts) > 0:
+                account = availableAccounts[0]
+            else:
+                agent = getUsenetAgent(cfg, hostname)
+                account = agent.getTrial()
+                account.host = hostname
 
+                db.session.add(account)
+                db.session.commit()
+
+            accountsInUse.add(account)
             sab.addServer(serverName, account, host)
         except Exception:
             log.exception(f'Account generation for {serverName} failed!')
