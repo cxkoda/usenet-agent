@@ -27,19 +27,20 @@ def getUsenetAgent(cfg, hostname):
     else:
         raise Exception("Unknown Host, no Agent available")
 
+def getHost(cfg, hostname):
+    host = cfg['hosts'][hostname]
+    host['ssl'] = strtobool(host['ssl'])
+    return HostConfig(**host)
 
 def main():
     cfg = ConfigLoader.load()
     db = Database(sqla.create_engine(f"sqlite:///{cfg['agent']['database']}"))
     sab = SabnzbdHandler(cfg)
-    hosts = ConfigObj('./usenet-hosts')
 
     for serverName in cfg['servers']:
         try:
             hostname = cfg['servers'][serverName]['host']
-            host = hosts[hostname]
-            host['ssl'] = strtobool(host['ssl'])
-            host = HostConfig(**host)
+            host = getHost(cfg, hostname)
 
             agent = getUsenetAgent(cfg, hostname)
             account = agent.getTrial()
