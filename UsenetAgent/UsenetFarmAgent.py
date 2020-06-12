@@ -1,6 +1,5 @@
 from .UsenetAgent import UsenetAgent
-from .EmailHandler import EmailHandler
-from .HostConfig import HostConfig
+from .UsenetAccount import UsenetAccount
 from .utils import retry
 
 import io
@@ -11,58 +10,46 @@ import logging
 
 log = logging.getLogger(__name__)
 
+from .EmailHandler import EmailHandler
 
 class UsernetFarmAgent(UsenetAgent):
-    def __init__(self, cfgHandler, agentName):
-        log.info(f"Setting up UsernetFarmAgent for {agentName}")
-        defaultHostConfig = HostConfig(host="news.usenet.farm", ssl=True, connections=40)
-        super(UsernetFarmAgent, self).__init__(cfgHandler, agentName, defaultHostConfig)
-        self.email = EmailHandler(self.cfg)
+    def __init__(self, emailHandler: EmailHandler):
+        log.info(f"Setting up UsernetFarmAgent")
+        super(UsernetFarmAgent, self).__init__()
+        self.email = emailHandler
 
     def checkFormResponse(self, response):
-        hashDict = {
-            '927cebcb8a0b52a93a2810a9cf88bba3': 'ok',
-            'd582643efc080479fbff83bab3f9da66': 'invalid_email',
-            'af0dd8fd70f5bb562ab889b3a2153715': 'banned',
-            'aea30385da16f6a7e75dbd4332904744': 'banned',
-            '3003850bff8d1072651fde9063e33200': 'already_used_email'
-        }
-
-        toHash = response.splitlines()[1]
-        htmlHash = self.hashString(toHash)
-
-        try:
-            log.debug(f'Response Hash: {htmlHash} -> {hashDict[htmlHash]}')
-            if hashDict[htmlHash] == 'banned':
-                raise Exception('Fuck!')
-            elif hashDict[htmlHash] == 'ok':
-                return True
-            else:
-                return False
-        except KeyError:
-            log.error(f'{toHash}')
-            log.error(f'HTML Hash: {htmlHash} -> unknown !!')
+        if response.find("You got mail!") >= 0:
+            return True
+        else:
             dumpFileName = 'farm-send-form-response.html'
             log.error(f'Dumping html to {dumpFileName}')
             with open(dumpFileName, 'w') as html:
                 html.write(response)
             raise Exception("Unknown response")
 
-    def sendForm(self, randomMail, withTor=False):
+
+
+    def sendForm(self, randomMail, withTor=False, dryRun=False):
         log.debug(f'Sending form for {randomMail}')
 
-        if withTor:
-            self.establishTorConnection()
+        if dryRun:
+            with open('farm-send-form-response.html', 'r') as file:
+                response = file.read()
+        else:
+            if withTor:
+                self.establishTorConnection()
 
-        self.browser.open('https://usenet.farm/')
-        form = self.browser.get_form()
-        form['email'] = randomMail
-        self.browser.submit_form(form)
+            self.browser.open('https://usenet.farm/')
+            form = self.browser.get_form()
+            form['email'] = randomMail
+            self.browser.submit_form(form)
 
-        if withTor:
-            self.closeTorConnection()
+            if withTor:
+                self.closeTorConnection()
 
-        response = str(self.browser.parsed)
+            response = str(self.browser.parsed)
+
         ok = self.checkFormResponse(response)
         return ok
 
@@ -104,16 +91,16 @@ class UsernetFarmAgent(UsenetAgent):
 
     def getTrial(self):
         def doFillAndSend():
-            randomMail = self.email.generateRandomMail(identifier=self.agentName)
+            randomMail = self.email.generateRandomMail(identifier="UsenetFarm")
             success = self.sendForm(randomMail)
             return success, randomMail
 
         randomMail = retry(doFillAndSend, maxretries=10)
         self.activateAccount(randomMail)
         username, password = self.getCredentials(randomMail)
+        account = UsenetAccount(username=username, password=password, valid=True)
 
-        log.info(f'Account generated for {self.agentName}')
-        log.debug(f'username: {username}')
-        log.debug(f'password: {password}')
-        self.updateSab(username, password)
-        return True
+        log.info(f'Account generated for UsenetFarm using {randomMail}')
+        log.debug(f'{account}')
+
+        return account

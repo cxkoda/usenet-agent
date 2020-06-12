@@ -4,6 +4,9 @@ from distutils.util import strtobool
 
 log = logging.getLogger(__name__)
 
+from .HostConfig import HostConfig
+from .UsenetAccount import UsenetAccount
+
 
 class SabnzbdHandler:
     def __init__(self, cfg):
@@ -32,16 +35,16 @@ class SabnzbdHandler:
         else:
             return True
 
-    def addServer(self, serverName, username, password, hostConfig):
+    def addServer(self, serverName: str, account: UsenetAccount, hostConfig: HostConfig):
         payload = {
             'mode': 'set_config',
             'section': 'servers',
             'name': serverName,
-            'host': hostConfig.host,
+            'host': hostConfig.url,
             'port': hostConfig.port,
             'ssl': int(hostConfig.ssl),
-            'username': username,
-            'password': password,
+            'username': account.username,
+            'password': account.password,
             'connections': hostConfig.connections
         }
         log.debug(f'Adding server {payload}')

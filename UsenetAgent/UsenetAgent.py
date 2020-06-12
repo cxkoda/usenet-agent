@@ -9,20 +9,13 @@ import socks
 import stem.process
 from robobrowser import RoboBrowser
 
-from .SabnzbdHandler import SabnzbdHandler
-
 import logging
 
 log = logging.getLogger(__name__)
 
 
 class UsenetAgent:
-    def __init__(self, cfg, agentName, hostConfig):
-        self.cfg = cfg
-        self.sab = SabnzbdHandler(cfg)
-        self.agentName = agentName
-        self.hostConfig = hostConfig
-
+    def __init__(self):
         self.browser = RoboBrowser(history=True, parser="html5lib")
 
         try:
@@ -35,7 +28,6 @@ class UsenetAgent:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.closeTorConnection()
-        self.cfg.write()
 
     def closeTorConnection(self):
         if (platform.system() == 'Windows'):
@@ -48,7 +40,7 @@ class UsenetAgent:
                 self.torProcess.kill()
                 del self.torProcess
 
-    def establishTorConnection(self):
+    def establishTorConnection(self, socksPort):
         self.socksPort = int(self.cfg['agent']['torPort'])
 
         def print_bootstrap_lines(line):
@@ -80,6 +72,3 @@ class UsenetAgent:
     def writeFile(self, fileName, parsedString):
         with io.open(fileName, 'w+', encoding='utf-8') as file:
             file.write(parsedString)
-
-    def updateSab(self, username, password):
-        self.sab.addServer(self.agentName, username, password, self.hostConfig)

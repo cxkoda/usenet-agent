@@ -1,0 +1,11 @@
+[UsenetFarm]
+url = "news.usenet.farm"
+port = 563
+ssl = True
+connections = 40
+
+[Hitnews]
+url = "free.hitnews.com"
+port = 119
+ssl = False
+connections = 5
