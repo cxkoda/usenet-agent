@@ -1,6 +1,7 @@
 import requests
 import logging
 from distutils.util import strtobool
+import json
 
 log = logging.getLogger(__name__)
 
@@ -69,3 +70,15 @@ class SabnzbdHandler:
             return False
 
         return self.checkResponse(response)
+
+    def getServers(self):
+        payload = {
+            'mode': 'get_config',
+            'section': 'servers',
+            'output': 'json',
+        }
+        log.debug(f'Adding server {payload}')
+        response = self.sendApiRequest(payload)
+        self.checkResponse(response)
+
+        return json.loads(response.text)['config']['servers']
