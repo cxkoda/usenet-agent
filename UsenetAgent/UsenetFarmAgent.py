@@ -21,6 +21,10 @@ class UsernetFarmAgent(UsenetAgent):
     def checkFormResponse(self, response):
         if response.find("You got mail!") >= 0:
             return True
+        elif response.find("Sorry, reached maxretries!") >= 0:
+            raise Exception("Banned from UsenetFarm")
+        elif response.find("Sorry, We have banned you due to abuse.") >= 0:
+            raise Exception("Banned from UsenetFarm")
         else:
             dumpFileName = 'farm-send-form-response.html'
             log.error(f'Dumping html to {dumpFileName}')
