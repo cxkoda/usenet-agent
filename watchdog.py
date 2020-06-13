@@ -121,8 +121,11 @@ class Supervisor():
                 self.environment.accountsInUse[self.servername] = self.account
                 self.environment.sab.addServer(self.servername, self.account, self.host)
                 self.environment.printInUse()
+
+            return True
         except Exception:
             log.exception(f'Account generation for {self.servername} failed!')
+            return False
 
     async def loop(self):
         while True:
@@ -131,7 +134,11 @@ class Supervisor():
             except asyncio.CancelledError:
                 pass
             finally:
-                await self.updateAccount()
+                success = await self.updateAccount()
+
+            if not success:
+                log.critical(f'Terminating supervisor for {self.servername}')
+                break
 
     async def startWatchdogs(self):
         if self.account is None:
