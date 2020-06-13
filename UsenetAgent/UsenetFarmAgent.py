@@ -58,7 +58,7 @@ class UsernetFarmAgent(UsenetAgent):
             mail_text = self.email.fetchLatestMail(mailSubject="Activate your account", recipient=randomMail)
             return mail_text is not None, mail_text
 
-        mail_text = retry(getActivationMail, maxretries=20, timeout=1)
+        mail_text = retry(getActivationMail, maxretries=30, timeout=2)
         mail_text = str(mail_text).replace('=\n', '', -1)
 
         link = re.search("\[!Activate now\]\((.*?)\)", mail_text).group(0)
@@ -82,7 +82,7 @@ class UsernetFarmAgent(UsenetAgent):
             mail_text = self.email.fetchLatestMail(mailSubject="Activated your trial account", recipient=randomMail)
             return mail_text is not None, None
 
-        retry(getActivationMail, maxretries=20, timeout=1)
+        retry(getActivationMail, maxretries=30, timeout=2)
 
         self.browser.open("https://usenet.farm/action/config/userpass")
         data = json.load(io.BytesIO(self.browser.response.content))
