@@ -24,7 +24,7 @@ class UsenetAccount(Base):
         return f"<UsenetAccount(id={self.id}, host={self.host}, username={self.username}, password={self.password}, valid={self.valid})>"
 
     def __repr__(self):
-        print(str(self))
+        return str(self)
 
     def checkLogin(self, host: HostConfig):
         if host.ssl:
